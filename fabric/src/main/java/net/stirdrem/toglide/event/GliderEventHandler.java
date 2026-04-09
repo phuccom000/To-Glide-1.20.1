@@ -24,7 +24,7 @@ public class GliderEventHandler {
             server.execute(() -> {
                 ToGlide.LOG.info("=== PLAYER JOIN: {} ===", joiningPlayer.getName().getString());
 
-                // 🔥 LOG ALL PLAYERS STATE
+                // LOG ALL PLAYERS STATE
                 for (ServerPlayer p : server.getPlayerList().getPlayers()) {
                     PlayerEntityDuck d = (PlayerEntityDuck) p;
 
@@ -208,5 +208,6 @@ public class GliderEventHandler {
         SyncGliderPacket.encode(packet, buf);
 
         ServerPlayNetworking.send(target, ModNetworking.SYNC_GLIDER, buf);
+        syncGliderPacket(packet, target);
     }
 }

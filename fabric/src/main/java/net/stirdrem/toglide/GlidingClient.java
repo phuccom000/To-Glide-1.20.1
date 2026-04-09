@@ -11,8 +11,6 @@ import net.stirdrem.toglide.networking.ModNetworking;
 import net.stirdrem.toglide.networking.SyncGliderPacket;
 
 public class GlidingClient implements ClientModInitializer {
-    private static int joinTicks = 0;
-    private static boolean requestedSync = false;
 
     @Override
     public void onInitializeClient() {
@@ -71,7 +69,7 @@ public class GlidingClient implements ClientModInitializer {
                             return 0.0F;
                         });
         }
-        
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.level == null) return;
 

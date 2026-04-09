@@ -33,21 +33,5 @@ public class ModNetworking {
                     context.get().setPacketHandled(true);
                 }
         );
-
-        // Register OtherPlayerGliderActivatedS2CPacket
-        CHANNEL.registerMessage(
-                id++,
-                OtherPlayerGliderActivatedS2CPacket.class,
-                OtherPlayerGliderActivatedS2CPacket::encode,
-                OtherPlayerGliderActivatedS2CPacket::decode,
-                (packet, context) -> {
-                    context.get().enqueueWork(() -> {
-                        if (context.get().getDirection().getReceptionSide().isClient()) {
-                            OtherPlayerGliderActivatedS2CPacket.handleClient(packet);
-                        }
-                    });
-                    context.get().setPacketHandled(true);
-                }
-        );
     }
 }
