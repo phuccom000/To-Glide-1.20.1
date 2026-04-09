@@ -1,11 +1,11 @@
 {
-  "item.gliding.wooden_glider" : "Wooden Glider",
-  "item.gliding.stone_glider" : "Stone Glider",
-  "item.gliding.iron_glider" : "Iron Glider",
-  "item.gliding.golden_glider" : "Golden Glider",
-  "item.gliding.diamond_glider" : "Diamond Glider",
-  "item.gliding.netherite_glider" : "Netherite Glider",
-  "text.autoconfig.gliding.title" : "Gliding Serverside Config (For Singleplayer Use)",
-  "text.autoconfig.gliding.option.offHandEnabled" : "Allow Glider Activation when Glider is in Offhand",
-  "text.autoconfig.gliding.option.offHandEnabled.@Tooltip" : "Make sure to disconnect and rejoin singleplayer world for this to take effect"
+  "item.toglide.wooden_glider": "Wooden Glider",
+  "item.toglide.stone_glider": "Stone Glider",
+  "item.toglide.iron_glider": "Iron Glider",
+  "item.toglide.golden_glider": "Golden Glider",
+  "item.toglide.diamond_glider": "Diamond Glider",
+  "item.toglide.netherite_glider": "Netherite Glider",
+  "text.autoconfig.toglide.title": "toglide Serverside Config (For Singleplayer Use)",
+  "text.autoconfig.toglide.option.offHandEnabled": "Allow Glider Activation when Glider is in Offhand",
+  "text.autoconfig.toglide.option.offHandEnabled.@Tooltip": "Make sure to disconnect and rejoin singleplayer world for this to take effect"
 }

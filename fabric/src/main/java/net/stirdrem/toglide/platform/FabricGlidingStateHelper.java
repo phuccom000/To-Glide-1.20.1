@@ -1,4 +1,4 @@
-package net.stirdrem.toglide.items;
+package net.stirdrem.toglide.platform;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -7,14 +7,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.stirdrem.toglide.networking.ModNetworking;
 import net.stirdrem.toglide.networking.SyncGliderPacket;
+import net.stirdrem.toglide.platform.services.IGlidingStateHelper;
 
-public class FabricGliderItem extends GliderItem {
-    public FabricGliderItem(double dropVelocity, double speedFactor, Properties settings) {
-        super(dropVelocity, speedFactor, settings);
-    }
-
+public class FabricGlidingStateHelper implements IGlidingStateHelper {
     @Override
-    protected void syncGliderPacket(SyncGliderPacket packet, ServerPlayer sp) {
+    public void syncToClient(SyncGliderPacket packet, ServerPlayer sp) {
         FriendlyByteBuf buf =
                 PacketByteBufs.create();
         SyncGliderPacket.encode(packet, buf);

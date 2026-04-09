@@ -65,4 +65,20 @@ public class SyncGliderPacket {
             }
         });
     }
+
+    public int getPlayerId() {
+        return playerId;
+    }
+
+    public boolean isGliding() {
+        return isGliding;
+    }
+
+    public boolean isActivating() {
+        return isActivating;
+    }
+
+    public String getGliderId() {
+        return gliderId;
+    }
 }

@@ -9,7 +9,8 @@
     "PlayerMixin"
   ],
   "client": [
-    "HumanoidModelMixin"
+    "HumanoidModelMixin",
+    "RemotePlayerMixin"
   ],
   "server": [
   ],

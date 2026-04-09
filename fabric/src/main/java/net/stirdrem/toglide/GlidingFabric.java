@@ -2,6 +2,7 @@ package net.stirdrem.toglide;
 
 import net.fabricmc.api.ModInitializer;
 import net.stirdrem.toglide.config.GlidingServersideConfig;
+import net.stirdrem.toglide.event.GliderEventHandler;
 import net.stirdrem.toglide.items.ModItemsRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,5 +19,6 @@ public class GlidingFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         ModItemsRegistry.registerItems();
+        GliderEventHandler.register();
     }
 }
