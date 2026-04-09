@@ -29,7 +29,7 @@ public class GliderItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         // Only toggle if in the air and not elytra-flying
-        if (!player.onGround() && !player.isFallFlying()) {
+        if (!player.onGround() && !player.isFallFlying() && !player.isInWater()) {
 
             // If already gliding → stop
             if (duck.toglide$isGliding()) {
@@ -44,6 +44,10 @@ public class GliderItem extends Item {
             }
 
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        } else {
+            duck.toglide$setIsGliding(false);
+            duck.toglide$setActiveGlider(null);
+            duck.toglide$setIsActivatingGlider(false);
         }
 
         return InteractionResultHolder.pass(stack);

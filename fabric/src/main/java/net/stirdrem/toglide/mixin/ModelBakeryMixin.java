@@ -43,7 +43,7 @@ public abstract class ModelBakeryMixin {
                 // Register the 3D first-person model (used in third-person when gliding)
                 ModelResourceLocation glider3DModel = new ModelResourceLocation(
                         id.getNamespace(),
-                        id.getPath() + "_3d_first_person",
+                        id.getPath() + "_predicate",
                         "inventory"
                 );
                 this.loadTopLevel(glider3DModel);
@@ -55,22 +55,6 @@ public abstract class ModelBakeryMixin {
                         "inventory"
                 );
                 this.loadTopLevel(normalModel);
-
-                // Optional: Register a folded version for inventory display
-                ModelResourceLocation foldedModel = new ModelResourceLocation(
-                        id.getNamespace(),
-                        id.getPath() + "_folded",
-                        "inventory"
-                );
-                this.loadTopLevel(foldedModel);
-
-                // Optional: Register an open version for gliding animation
-                ModelResourceLocation openModel = new ModelResourceLocation(
-                        id.getNamespace(),
-                        id.getPath() + "_open",
-                        "inventory"
-                );
-                this.loadTopLevel(openModel);
             }
         }
     }

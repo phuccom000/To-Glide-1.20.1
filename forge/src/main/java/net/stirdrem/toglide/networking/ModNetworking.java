@@ -26,5 +26,17 @@ public class ModNetworking {
                     ctx.get().setPacketHandled(true);
                 }
         );
+        CHANNEL.registerMessage(
+                id++,
+                OtherPlayerGliderActivatedS2CPacket.class,
+                OtherPlayerGliderActivatedS2CPacket::encode,
+                OtherPlayerGliderActivatedS2CPacket::decode,
+                (pkt, ctx) -> {
+                    ctx.get().enqueueWork(() -> {
+                        OtherPlayerGliderActivatedS2CPacket.handleClient(pkt);
+                    });
+                    ctx.get().setPacketHandled(true);
+                }
+        );
     }
 }

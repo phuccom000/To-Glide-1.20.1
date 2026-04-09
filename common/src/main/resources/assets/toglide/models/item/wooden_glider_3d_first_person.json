@@ -283,7 +283,7 @@
 	"display": {
 		"thirdperson_righthand": {
 			"rotation": [-90, -180, -11.25],
-			"translation": [-6.75, -2, -3]
+			"translation": [-7, -2, -3]
 		},
 		"thirdperson_lefthand": {
 			"rotation": [-90, -180, -11.25],

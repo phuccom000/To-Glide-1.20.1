@@ -30,19 +30,16 @@ public abstract class GliderItemRendererMixin {
             cancellable = true)
     public void toglide$renderGliderThirdPerson(LivingEntity entity, ItemStack itemStack, ItemDisplayContext itemDisplayContext, boolean leftHanded, PoseStack poseStack, MultiBufferSource multiBufferSource, Level level, int light, int overlay, int seed, CallbackInfo ci) {
         // Only replace held item model in third person
+
         if (itemDisplayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND || itemDisplayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND) {
-            if (entity instanceof PlayerEntityDuck duck && duck.toglide$isGliding()) {
-                GliderItem activeGlider = duck.toglide$getActiveGlider();
-                if (activeGlider != null && itemStack.getItem() instanceof GliderItem) {
-                    BakedModel gliderModel = getGliderThirdPersonModel(itemStack, entity, seed);
-                    if (gliderModel != null) {
-                        ((ItemRenderer) (Object) this).render(itemStack, itemDisplayContext, leftHanded, poseStack, multiBufferSource, light, overlay, gliderModel);
-                        ci.cancel(); // cancel the original render
-                    }
+            if (itemStack.getItem() instanceof GliderItem) {
+                BakedModel gliderModel = getGliderThirdPersonModel(itemStack, entity, seed);
+                if (gliderModel != null) {
+                    ((ItemRenderer) (Object) this).render(itemStack, itemDisplayContext, leftHanded, poseStack, multiBufferSource, light, overlay, gliderModel);
+                    ci.cancel(); // cancel the original render
                 }
             }
         }
-
     }
 
     @Inject(method = "render",
@@ -115,7 +112,7 @@ public abstract class GliderItemRendererMixin {
     }
 
     private String determineModelPath(ItemStack stack) {
-        if (stack.getItem() instanceof GliderItem) return stack.getItem() + "_3d_first_person";
+        if (stack.getItem() instanceof GliderItem) return stack.getItem() + "_predicate";
         return stack.getItem().toString();
     }
 

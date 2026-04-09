@@ -1,6 +1,7 @@
 package net.stirdrem.toglide;
 
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -22,7 +23,7 @@ public class GlidingForgeClient {
         for (Item item : ForgeRegistries.ITEMS) {
             if (item instanceof GliderItem)
                 ItemProperties.register(item,
-                        new net.minecraft.resources.ResourceLocation(ToGlide.MOD_ID),
+                        new net.minecraft.resources.ResourceLocation("gliding"),
                         (stack, world, entity, seed) -> {
                             if (entity instanceof PlayerEntityDuck duck && duck.toglide$isGliding()) {
                                 return 1.0F;
@@ -38,30 +39,20 @@ public class GlidingForgeClient {
         for (Item item : BuiltInRegistries.ITEM) {
             if (item instanceof GliderItem) {
                 ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
-
+                ModelResourceLocation glider3DModel = new ModelResourceLocation(
+                        id.getNamespace(),
+                        id.getPath() + "_predicate",
+                        "inventory"
+                );
                 // Register the 3D first-person model (used in third-person when gliding)
-                event.register(new ResourceLocation(
+                event.register(glider3DModel);
+                ModelResourceLocation normalModel = new ModelResourceLocation(
                         id.getNamespace(),
-                        id.getPath() + "_3d_first_person"
-                ));
-
+                        id.getPath(),
+                        "inventory"
+                );
                 // Register the normal inventory model
-                event.register(new ResourceLocation(
-                        id.getNamespace(),
-                        id.getPath()
-                ));
-
-                // Optional: Register a folded version for inventory display
-                event.register(new ResourceLocation(
-                        id.getNamespace(),
-                        id.getPath() + "_folded"
-                ));
-
-                // Optional: Register an open version for gliding animation
-                event.register(new ResourceLocation(
-                        id.getNamespace(),
-                        id.getPath() + "_open"
-                ));
+                event.register(normalModel);
             }
         }
 
@@ -81,7 +72,7 @@ public class GlidingForgeClient {
 
         for (String gliderType : gliderTypes) {
             // Register 3D first-person model
-            event.register(new ResourceLocation("stoneycore", gliderType + "_3d_first_person"));
+            event.register(new ResourceLocation("stoneycore", gliderType + "_predicate"));
 
             // Register normal model
             event.register(new ResourceLocation("stoneycore", gliderType));

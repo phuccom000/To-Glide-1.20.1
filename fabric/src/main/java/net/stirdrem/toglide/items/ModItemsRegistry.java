@@ -11,12 +11,12 @@ import net.stirdrem.toglide.ToGlide;
 public interface ModItemsRegistry {
 
     // registers glider items
-    Item WOODEN_GLIDER = register("wooden_glider", new GliderItem(-0.26, 1.01, new Item.Properties().stacksTo(1)));
-    Item STONE_GLIDER = register("stone_glider", new GliderItem(-0.22, 1.02, new Item.Properties().stacksTo(1)));
-    Item IRON_GLIDER = register("iron_glider", new GliderItem(-0.18, 1.03, new Item.Properties().stacksTo(1)));
-    Item GOLDEN_GLIDER = register("golden_glider", new GliderItem(-0.16, 1.04, new Item.Properties().stacksTo(1)));
-    Item DIAMOND_GLIDER = register("diamond_glider", new GliderItem(-0.14, 1.05, new Item.Properties().stacksTo(1)));
-    Item NETHERITE_GLIDER = register("netherite_glider", new GliderItem(-0.12, 1.06, new Item.Properties().stacksTo(1).fireResistant()));
+    Item WOODEN_GLIDER = register("wooden_glider", new FabricGliderItem(-0.26, 1.01, new Item.Properties().stacksTo(1)));
+    Item STONE_GLIDER = register("stone_glider", new FabricGliderItem(-0.22, 1.02, new Item.Properties().stacksTo(1)));
+    Item IRON_GLIDER = register("iron_glider", new FabricGliderItem(-0.18, 1.03, new Item.Properties().stacksTo(1)));
+    Item GOLDEN_GLIDER = register("golden_glider", new FabricGliderItem(-0.16, 1.04, new Item.Properties().stacksTo(1)));
+    Item DIAMOND_GLIDER = register("diamond_glider", new FabricGliderItem(-0.14, 1.05, new Item.Properties().stacksTo(1)));
+    Item NETHERITE_GLIDER = register("netherite_glider", new FabricGliderItem(-0.12, 1.06, new Item.Properties().stacksTo(1).fireResistant()));
 
     static void initialize() {
         // get the event for modifying entries in the tools group and register an event handler that adds the mod items.

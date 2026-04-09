@@ -2,5 +2,13 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "toglide:item/netherite_glider"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "gliding": 1
+      },
+      "model": "toglide:item/nether_glider_3d_first_person"
+    }
+  ]
 }

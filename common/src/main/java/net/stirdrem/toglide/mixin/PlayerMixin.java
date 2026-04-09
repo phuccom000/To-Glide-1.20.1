@@ -1,10 +1,12 @@
 package net.stirdrem.toglide.mixin;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.stirdrem.toglide.PlayerEntityDuck;
 import net.stirdrem.toglide.items.GliderItem;
 import net.stirdrem.toglide.util.GliderUtil;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -51,14 +53,20 @@ public abstract class PlayerMixin implements PlayerEntityDuck {
         this.toglide$activeGlider = item;
     }
 
+    @Unique
+    private static final ResourceLocation GLIDER_SYNC_ID =
+            new ResourceLocation("toglide", "sync_glider");
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void gliderTick(CallbackInfo ci) {
         Player player = (Player) (Object) this;
         PlayerEntityDuck duck = (PlayerEntityDuck) this;
-        
+
         // Stop gliding when on ground or elytra flying
         if (player.onGround() || player.isFallFlying() || player.isInWater()) {
-            duck.toglide$setIsGliding(false);
+            if (duck.toglide$isGliding()) {
+                duck.toglide$setIsGliding(false);
+            }
             return;
         }
 
