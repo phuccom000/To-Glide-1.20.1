@@ -1,8 +1,8 @@
 package net.stirdrem.toglide.event;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -16,26 +16,6 @@ import net.stirdrem.toglide.networking.SyncGliderPacket;
 public class GliderEventHandler {
 
     /**
-     * Handle when player lands on ground after falling/gliding
-     */
-    @SubscribeEvent
-    public static void onPlayerLand(LivingFallEvent event) {
-        if (event.getEntity() instanceof Player player) {
-            PlayerEntityDuck duck = (PlayerEntityDuck) player;
-
-            // If player was gliding and now hits the ground
-            if (duck.toglide$isGliding()) {
-                // Stop gliding when hitting the ground
-                duck.toglide$setIsGliding(false);
-                duck.toglide$setActiveGlider(null);
-
-                // Optional: Reduce fall damage if landing while gliding
-                // event.setDamageMultiplier(0.5f);
-            }
-        }
-    }
-
-    /**
      * Alternative: Using tick event to check if player is on ground
      * More reliable for detecting ground contact
      */
@@ -46,42 +26,68 @@ public class GliderEventHandler {
             PlayerEntityDuck duck = (PlayerEntityDuck) player;
 
             // Check if player is gliding and is on ground
-            if (duck.toglide$isGliding() && (player.onGround() || player.isInWater() || player.isFallFlying())) {
-                duck.toglide$setIsGliding(false);
-                duck.toglide$setActiveGlider(null);
+            if (duck.toglide$isGliding()) {
+                if ((player.onGround() || player.isInWater() || player.isFallFlying())) {
+                    duck.toglide$setIsGliding(false);
+                    duck.toglide$setActiveGlider(null);
+                    duck.toglide$setIsActivatingGlider(false);
+                }
             }
         }
     }
 
     @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking event) {
+        if (!(event.getTarget() instanceof ServerPlayer target)) return;
+        if (!(event.getEntity() instanceof ServerPlayer watcher)) return;
+
+        PlayerEntityDuck duck = (PlayerEntityDuck) target;
+
+        String gliderId = duck.toglide$getActiveGlider() != null
+                ? BuiltInRegistries.ITEM.getKey(duck.toglide$getActiveGlider()).toString()
+                : "";
+
+        SyncGliderPacket packet = new SyncGliderPacket(
+                target.getId(),
+                duck.toglide$isGliding(),
+                duck.toglide$isActivatingGlider(),
+                gliderId
+        );
+
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> watcher),
+                packet
+        );
+    }
+
+    @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-            // Sync glider state when player joins
-            if (serverPlayer instanceof PlayerEntityDuck duck) {
-                String gliderId = "";
-                if (duck.toglide$getActiveGlider() != null) {
-                    gliderId = net.minecraft.core.registries.BuiltInRegistries.ITEM
-                            .getKey(duck.toglide$getActiveGlider())
-                            .toString();
-                }
+        if (event.getEntity() instanceof ServerPlayer joiningPlayer) {
+
+            // 1. Send ALL existing players → joining player
+            for (ServerPlayer other : joiningPlayer.server.getPlayerList().getPlayers()) {
+                if (other == joiningPlayer) continue;
+
+                PlayerEntityDuck duck = (PlayerEntityDuck) other;
 
                 SyncGliderPacket packet = new SyncGliderPacket(
-                        serverPlayer.getId(),
+                        other.getId(),
                         duck.toglide$isGliding(),
                         duck.toglide$isActivatingGlider(),
-                        gliderId
+                        duck.toglide$getActiveGlider() != null
+                                ? BuiltInRegistries.ITEM.getKey(duck.toglide$getActiveGlider()).toString()
+                                : ""
                 );
 
                 ModNetworking.CHANNEL.send(
-                        PacketDistributor.TRACKING_ENTITY.with(() -> serverPlayer),
-                        packet
-                );
-
-                ModNetworking.CHANNEL.send(
-                        PacketDistributor.PLAYER.with(() -> serverPlayer),
+                        PacketDistributor.PLAYER.with(() -> joiningPlayer),
                         packet
                 );
             }
+
+            // 2. Send joining player → others
+            PlayerEntityDuck duck = (PlayerEntityDuck) joiningPlayer;
+            sendSyncPacket(joiningPlayer, duck);
         }
     }
 
@@ -92,30 +98,38 @@ public class GliderEventHandler {
             if (serverPlayer instanceof PlayerEntityDuck duck) {
                 // Optionally reset gliding on respawn
                 duck.toglide$setIsGliding(false);
-
-                String gliderId = "";
-                if (duck.toglide$getActiveGlider() != null) {
-                    gliderId = net.minecraft.core.registries.BuiltInRegistries.ITEM
-                            .getKey(duck.toglide$getActiveGlider())
-                            .toString();
-                }
-
-                SyncGliderPacket packet = new SyncGliderPacket(
-                        serverPlayer.getId(),
-                        duck.toglide$isGliding(),
-                        duck.toglide$isActivatingGlider(),
-                        gliderId
-                );
-                ModNetworking.CHANNEL.send(
-                        PacketDistributor.TRACKING_ENTITY.with(() -> serverPlayer),
-                        packet
-                );
-
-                ModNetworking.CHANNEL.send(
-                        PacketDistributor.PLAYER.with(() -> serverPlayer),
-                        packet
-                );
+                sendSyncPacket(serverPlayer, duck);
             }
         }
+    }
+
+    private static void sendSyncPacket(ServerPlayer player, PlayerEntityDuck duck) {
+        String gliderId = "";
+        if (duck.toglide$getActiveGlider() != null) {
+            gliderId = BuiltInRegistries.ITEM
+                    .getKey(duck.toglide$getActiveGlider())
+                    .toString();
+        }
+
+        SyncGliderPacket packet = new SyncGliderPacket(
+                player.getId(),
+                duck.toglide$isGliding(),
+                duck.toglide$isActivatingGlider(),
+                gliderId
+        );
+
+        syncGliderPacket(packet, player);
+    }
+
+    protected static void syncGliderPacket(SyncGliderPacket packet, ServerPlayer sp) {
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.TRACKING_ENTITY.with(() -> sp),
+                packet
+        );
+
+        ModNetworking.CHANNEL.send(
+                PacketDistributor.PLAYER.with(() -> sp),
+                packet
+        );
     }
 }
