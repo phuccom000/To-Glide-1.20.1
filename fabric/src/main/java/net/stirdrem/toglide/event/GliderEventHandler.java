@@ -22,13 +22,13 @@ public class GliderEventHandler {
             ServerPlayer joiningPlayer = handler.getPlayer();
 
             server.execute(() -> {
-                ToGlide.LOG.info("=== PLAYER JOIN: {} ===", joiningPlayer.getName().getString());
+                ToGlide.LOG.debug("=== PLAYER JOIN: {} ===", joiningPlayer.getName().getString());
 
                 // LOG ALL PLAYERS STATE
                 for (ServerPlayer p : server.getPlayerList().getPlayers()) {
                     PlayerEntityDuck d = (PlayerEntityDuck) p;
 
-                    ToGlide.LOG.info("[STATE] Player: {} | gliding={} | activating={} | glider={}",
+                    ToGlide.LOG.debug("[STATE] Player: {} | gliding={} | activating={} | glider={}",
                             p.getName().getString(),
                             d.toglide$isGliding(),
                             d.toglide$isActivatingGlider(),
@@ -43,7 +43,7 @@ public class GliderEventHandler {
                     if (other == joiningPlayer) continue;
 
                     if (other instanceof PlayerEntityDuck duck) {
-                        ToGlide.LOG.info("[SEND] {} → {} | gliding={}",
+                        ToGlide.LOG.debug("[SEND] {} → {} | gliding={}",
                                 other.getName().getString(),
                                 joiningPlayer.getName().getString(),
                                 duck.toglide$isGliding());
@@ -56,7 +56,7 @@ public class GliderEventHandler {
                 if (joiningPlayer instanceof PlayerEntityDuck duck) {
                     validateAndFixGliderState(joiningPlayer, duck);
 
-                    ToGlide.LOG.info("[SEND] {} → ALL | gliding={}",
+                    ToGlide.LOG.debug("[SEND] {} → ALL | gliding={}",
                             joiningPlayer.getName().getString(),
                             duck.toglide$isGliding());
 
@@ -101,7 +101,6 @@ public class GliderEventHandler {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 PlayerEntityDuck duck = (PlayerEntityDuck) player;
-
                 // Only check ground state if player is actually in the world
                 if (player.isAlive() && duck.toglide$isGliding()) {
                     // Stop gliding if on ground or in water
@@ -109,8 +108,8 @@ public class GliderEventHandler {
                         duck.toglide$setIsGliding(false);
                         duck.toglide$setActiveGlider(null);
                         duck.toglide$setIsActivatingGlider(false);
-                        sendSyncPacket(player, duck);
                     }
+                    sendSyncPacket(player, duck);
                 }
             }
         });
@@ -158,33 +157,21 @@ public class GliderEventHandler {
     }
 
     protected static void syncGliderPacket(SyncGliderPacket packet, ServerPlayer sp) {
-        ToGlide.LOG.info("[SYNC] Sending packet for {} | gliding={} activating={}",
-                sp.getName().getString(),
-                packet.isGliding(),
-                packet.isActivating());
+        for (ServerPlayer p : PlayerLookup.tracking(sp)) {
+            send(packet, p);
+        }
+        send(packet, sp);
+    }
 
+    private static void send(SyncGliderPacket packet, ServerPlayer target) {
         FriendlyByteBuf buf = PacketByteBufs.create();
         SyncGliderPacket.encode(packet, buf);
 
-        // self
-        ServerPlayNetworking.send(sp, ModNetworking.SYNC_GLIDER, buf);
-
-        // others
-        for (ServerPlayer trackingPlayer : PlayerLookup.tracking(sp)) {
-            if (trackingPlayer != sp) {
-                ToGlide.LOG.info("[SYNC] {} → {}",
-                        sp.getName().getString(),
-                        trackingPlayer.getName().getString());
-
-                FriendlyByteBuf trackingBuf = PacketByteBufs.create();
-                SyncGliderPacket.encode(packet, trackingBuf);
-                ServerPlayNetworking.send(trackingPlayer, ModNetworking.SYNC_GLIDER, trackingBuf);
-            }
-        }
+        ServerPlayNetworking.send(target, ModNetworking.SYNC_GLIDER, buf);
     }
 
     private static void sendSyncPacketToTarget(ServerPlayer source, PlayerEntityDuck duck, ServerPlayer target) {
-        ToGlide.LOG.info("[DIRECT SYNC] {} → {} | gliding={} activating={}",
+        ToGlide.LOG.debug("[DIRECT SYNC] {} → {} | gliding={} activating={}",
                 source.getName().getString(),
                 target.getName().getString(),
                 duck.toglide$isGliding(),
@@ -204,10 +191,6 @@ public class GliderEventHandler {
                 gliderId
         );
 
-        FriendlyByteBuf buf = PacketByteBufs.create();
-        SyncGliderPacket.encode(packet, buf);
-
-        ServerPlayNetworking.send(target, ModNetworking.SYNC_GLIDER, buf);
-        syncGliderPacket(packet, target);
+        send(packet, target);
     }
 }

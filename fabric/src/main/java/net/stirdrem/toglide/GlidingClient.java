@@ -46,12 +46,10 @@ public class GlidingClient implements ClientModInitializer {
                                     duck.toglide$setActiveGlider(null);
                                 }
 
-                                System.out.println("[CLIENT] Applied glider for "
-                                        + player.getName().getString()
-                                        + " | gliding=" + packet.isGliding());
+                                ToGlide.LOG.debug("[CLIENT] Applied glider for {} | gliding={}", player.getName().getString(), packet.isGliding());
                             }
                         } else {
-                            System.out.println("[CLIENT] Entity not found for id=" + packet.getPlayerId());
+                            ToGlide.LOG.debug("[CLIENT] Entity not found for id={}", packet.getPlayerId());
                         }
                     });
                 }

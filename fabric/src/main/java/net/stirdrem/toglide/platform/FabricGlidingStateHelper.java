@@ -12,25 +12,16 @@ import net.stirdrem.toglide.platform.services.IGlidingStateHelper;
 public class FabricGlidingStateHelper implements IGlidingStateHelper {
     @Override
     public void syncToClient(SyncGliderPacket packet, ServerPlayer sp) {
-        FriendlyByteBuf buf =
-                PacketByteBufs.create();
+        for (ServerPlayer p : PlayerLookup.tracking(sp)) {
+            send(packet, p);
+        }
+        send(packet, sp);
+    }
+
+    private void send(SyncGliderPacket packet, ServerPlayer target) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
         SyncGliderPacket.encode(packet, buf);
 
-        // send to others
-        for (ServerPlayer p :
-                PlayerLookup.tracking(sp)) {
-
-            ServerPlayNetworking.send(
-                    p,
-                    ModNetworking.SYNC_GLIDER,
-                    buf
-            );
-        }
-
-        ServerPlayNetworking.send(
-                sp,
-                ModNetworking.SYNC_GLIDER,
-                buf
-        );
+        ServerPlayNetworking.send(target, ModNetworking.SYNC_GLIDER, buf);
     }
 }
