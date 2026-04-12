@@ -1,0 +1,20 @@
+{
+  "gliding": {
+    "subtitle": "sounds.toglide.gliding",
+    "sounds": [
+      "toglide:gliding"
+    ]
+  },
+  "glider_open": {
+    "subtitle": "sounds.toglide.glider_open",
+    "sounds": [
+      "toglide:glider_open"
+    ]
+  },
+  "glider_close": {
+    "subtitle": "sounds.toglide.glider_close",
+    "sounds": [
+      "toglide:glider_close"
+    ]
+  }
+}

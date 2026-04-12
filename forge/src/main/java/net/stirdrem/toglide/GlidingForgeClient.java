@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
@@ -56,30 +57,17 @@ public class GlidingForgeClient {
             }
         }
 
-        // If you want to manually specify glider items instead of detecting automatically
-        registerManualGliderModels(event);
     }
 
-    private static void registerManualGliderModels(ModelEvent.RegisterAdditional event) {
-        // Example: Manually register specific glider models
-        String[] gliderTypes = {
-                "wooden_glider",
-                "iron_glider",
-                "golden_glider",
-                "diamond_glider",
-                "netherite_glider"
-        };
-
-        for (String gliderType : gliderTypes) {
-            // Register 3D first-person model
-            event.register(new ResourceLocation("stoneycore", gliderType + "_predicate"));
-
-            // Register normal model
-            event.register(new ResourceLocation("stoneycore", gliderType));
-
-            // Register variants if needed
-            event.register(new ResourceLocation("stoneycore", gliderType + "_folded"));
-            event.register(new ResourceLocation("stoneycore", gliderType + "_open"));
+    @SubscribeEvent
+    public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        for (Item item : ForgeRegistries.ITEMS.getValues()) {
+            event.register((stack, tintIndex) -> {
+                if (tintIndex == 0 && stack.getItem() instanceof GliderItem glider) {
+                    return glider.getColor(stack);
+                }
+                return 0xFFFFFF;
+            }, item);
         }
     }
 }

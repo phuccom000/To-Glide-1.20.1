@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -11,11 +12,11 @@ import net.minecraft.world.phys.Vec3;
 import net.stirdrem.toglide.PlayerEntityDuck;
 import net.stirdrem.toglide.networking.SyncGliderPacket;
 
-public class GliderItem extends Item {
+public class GliderItem extends Item implements DyeableLeatherItem {
 
     public double glideDropVelocity;
     public double glideSpeedIncreaseFactor;
-    private static final double MIN_GLIDE_HEIGHT = 1.5; // Change to 2.0 if you prefer 2 blocks
+    private static final double MIN_GLIDE_HEIGHT = 1.5;
 
     public GliderItem(double dropVelocity, double speedFactor, Properties settings) {
         super(settings);
@@ -25,19 +26,24 @@ public class GliderItem extends Item {
     }
 
     @Override
+    public int getColor(ItemStack stack) {
+        if (DyeableLeatherItem.super.hasCustomColor(stack)) {
+            return DyeableLeatherItem.super.getColor(stack);
+        }
+
+        return 0xFFFFFF;
+    }
+
+    @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (!(player instanceof PlayerEntityDuck duck)) {
             return InteractionResultHolder.pass(player.getItemInHand(hand));
         }
-
         ItemStack stack = player.getItemInHand(hand);
+        if (hand != InteractionHand.MAIN_HAND) return InteractionResultHolder.fail(stack);
 
         if (!player.onGround() && !player.isFallFlying() && !player.isInWater()) {
 
-            // Check if player is high enough above ground
-            if (!isAboveGround(player, MIN_GLIDE_HEIGHT)) {
-                return InteractionResultHolder.fail(stack);
-            }
 
             if (!level.isClientSide) {
 
@@ -46,10 +52,24 @@ public class GliderItem extends Item {
                     duck.toglide$setIsGliding(false);
                     duck.toglide$setActiveGlider(null);
                     duck.toglide$setIsActivatingGlider(false);
+
+                    // Play close sound on server for all players nearby
+                    playGliderSound(player, false);
                 } else {
+                    if (player.getCooldowns().isOnCooldown(this)) {
+                        return InteractionResultHolder.fail(stack);
+                    }
+                    // Check if player is high enough above ground
+                    if (!isAboveGround(player, MIN_GLIDE_HEIGHT)) {
+                        return InteractionResultHolder.fail(stack);
+                    }
+
                     duck.toglide$setIsGliding(true);
                     duck.toglide$setIsActivatingGlider(true);
                     duck.toglide$setActiveGlider(this);
+
+                    // Play open sound on server for all players nearby
+                    playGliderSound(player, true);
                 }
 
                 String id = "";
@@ -68,12 +88,25 @@ public class GliderItem extends Item {
 
                 ServerPlayer sp = (ServerPlayer) player;
                 syncGliderPacket(packet, sp);
+            } else {
+                // Client-side sound (immediate feedback)
+                boolean isOpening = !duck.toglide$isGliding();
+                playGliderSound(player, isOpening);
             }
 
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
         }
 
         return InteractionResultHolder.pass(stack);
+    }
+
+    /**
+     * Play glider open/close sound
+     *
+     * @param player    The player using the glider
+     * @param isOpening true for open sound, false for close sound
+     */
+    protected void playGliderSound(Player player, boolean isOpening) {
     }
 
     protected void syncGliderPacket(SyncGliderPacket packet, ServerPlayer sp) {
@@ -93,7 +126,7 @@ public class GliderItem extends Item {
         // Simple raycast to find the ground
         var hitResult = level.clip(new net.minecraft.world.level.ClipContext(
                 position,
-                position.subtract(0, position.y + 10, 0), // Cast all the way down to bedrock
+                position.subtract(0, position.y + 10, 0),
                 net.minecraft.world.level.ClipContext.Block.COLLIDER,
                 net.minecraft.world.level.ClipContext.Fluid.NONE,
                 player
@@ -104,7 +137,6 @@ public class GliderItem extends Item {
             return distanceToGround >= minHeight;
         }
 
-        // If no ground found (shouldn't happen), return false as a safety measure
         return false;
     }
 }

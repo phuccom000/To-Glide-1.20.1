@@ -3,15 +3,16 @@ package net.stirdrem.toglide;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
+import net.stirdrem.toglide.client.sound.GliderSoundManager;
 import net.stirdrem.toglide.items.GliderItem;
 import net.stirdrem.toglide.networking.ModNetworking;
 import net.stirdrem.toglide.networking.SyncGliderPacket;
 
 public class GlidingClient implements ClientModInitializer {
-
     @Override
     public void onInitializeClient() {
         ModNetworking.registerClient();
@@ -69,17 +70,17 @@ public class GlidingClient implements ClientModInitializer {
         }
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.level == null) return;
-
-            for (var player : client.level.players()) {
-                if (player instanceof PlayerEntityDuck duck) {
-                    if (duck.toglide$isGliding()) {
-                        // force visual update (basically re-trigger animation logic)
-                        duck.toglide$setIsActivatingGlider(true);
-                    }
-                }
-            }
+            if (client.level == null || client.isPaused() || client.player == null) return;
+            GliderSoundManager.getInstance().tick();
         });
-
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (item instanceof GliderItem glider)
+                ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
+                    if (tintIndex == 0) {
+                        return glider.getColor(stack);
+                    }
+                    return 0xFFFFFF;
+                }, item);
+        }
     }
 }

@@ -1,13 +1,17 @@
 package net.stirdrem.toglide.util;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.stirdrem.toglide.PlayerEntityDuck;
 import net.stirdrem.toglide.items.GliderItem;
+import net.stirdrem.toglide.networking.SyncGliderPacket;
+import net.stirdrem.toglide.platform.Services;
 
 /*
 A bunch of utility methods for using gliders.
@@ -128,6 +132,33 @@ public class GliderUtil {
                 newYVelocity,
                 currentVelocity.z * gliderInHand.glideSpeedIncreaseFactor
         );
+    }
+
+    private static final int COOLDOWN_TICKS = 100;
+
+    public static void onPlayerDamaged(Player player) {
+        if (!(player instanceof ServerPlayer sp)) return;
+        if (!(player instanceof PlayerEntityDuck duck)) return;
+
+        if (!duck.toglide$isGliding()) return;
+
+        // Disable gliding
+        duck.toglide$setIsGliding(false);
+        duck.toglide$setIsActivatingGlider(false);
+
+        // Apply cooldown
+        player.getCooldowns().addCooldown(duck.toglide$getActiveGlider(), COOLDOWN_TICKS);
+        duck.toglide$setActiveGlider(null);
+
+        // Sync
+        SyncGliderPacket packet = new SyncGliderPacket(
+                sp.getId(),
+                false,
+                false,
+                ""
+        );
+
+        Services.GLIDING_STATE_HELPER.syncToClient(packet, sp);
     }
 
     /**

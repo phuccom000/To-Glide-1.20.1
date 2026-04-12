@@ -20,6 +20,7 @@ public abstract class PlayerMixin implements PlayerEntityDuck {
     private boolean toglide$isGliding;
     private boolean toglide$isActivatingGlider;
     private GliderItem toglide$activeGlider;
+    private int toglide$soundTick;
 
     @Override
     public boolean toglide$isGliding() {
@@ -31,7 +32,6 @@ public abstract class PlayerMixin implements PlayerEntityDuck {
         this.toglide$isGliding = value;
 
         if (!value) {
-            this.toglide$activeGlider = null;
             this.toglide$isActivatingGlider = false;
         }
     }
@@ -56,41 +56,12 @@ public abstract class PlayerMixin implements PlayerEntityDuck {
         this.toglide$activeGlider = item;
     }
 
-    @Unique
-    private int toglide$loginTicks = 0;
-
-    @Inject(method = "tick", at = @At("HEAD"))
-    private void onTickStart(CallbackInfo ci) {
-        Player player = (Player) (Object) this;
-
-        // Track ticks since login
-        if (player.tickCount < 100) {
-            toglide$loginTicks++;
-        }
-    }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void gliderTick(CallbackInfo ci) {
         try {
             Player player = (Player) (Object) this;
-            PlayerEntityDuck duck = (PlayerEntityDuck) this;
-
-            // CRITICAL: On first few ticks after login, re-activate gliding if needed
-            if (toglide$loginTicks < 20 && duck.toglide$isGliding() && !player.onGround()) {
-                // Make sure glider is in hand
-                GliderItem activeGlider = duck.toglide$getActiveGlider();
-                if (activeGlider != null) {
-                    boolean hasGlider = (player.getMainHandItem().getItem() == activeGlider) ||
-                            (player.getOffhandItem().getItem() == activeGlider);
-
-                    if (hasGlider && !player.isFallFlying()) {
-                        // Force gliding activation
-                        duck.toglide$setIsActivatingGlider(true);
-                        GliderUtil.playerGliderMovement(player);
-                        GliderUtil.resetFallDamage(player);
-                    }
-                }
-            }
+            PlayerEntityDuck duck = this;
 
             // Stop gliding when on ground or elytra flying
             if (player.onGround() || player.isFallFlying() || player.isInWater()) {
@@ -112,8 +83,7 @@ public abstract class PlayerMixin implements PlayerEntityDuck {
                 // Stop gliding if active glider is no longer in either hand
                 GliderItem activeGlider = duck.toglide$getActiveGlider();
                 boolean hasActiveGlider = activeGlider != null &&
-                        ((player.getMainHandItem().getItem() == activeGlider) ||
-                                (player.getOffhandItem().getItem() == activeGlider));
+                        ((player.getMainHandItem().getItem() == activeGlider));
 
                 if (!hasActiveGlider) {
                     duck.toglide$setIsGliding(false);

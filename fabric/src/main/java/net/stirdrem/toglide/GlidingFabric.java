@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.stirdrem.toglide.config.GlidingServersideConfig;
 import net.stirdrem.toglide.event.GliderEventHandler;
 import net.stirdrem.toglide.items.ModItemsRegistry;
+import net.stirdrem.toglide.sounds.ModSounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ public class GlidingFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModSounds.registerSounds();
         ModItemsRegistry.registerItems();
         GliderEventHandler.register();
     }
