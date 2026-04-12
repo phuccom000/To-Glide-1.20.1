@@ -21,22 +21,6 @@ public class ModItemsRegistry {
     public static final RegistryObject<Item> WOODEN_GLIDER = ITEMS.register("wooden_glider",
             () -> new ForgeGliderItem(-0.12, 1.06, new Item.Properties().stacksTo(1)));
 
-    public static final RegistryObject<Item> STONE_GLIDER = ITEMS.register("stone_glider",
-            () -> new ForgeGliderItem(-0.22, 1.02, new Item.Properties().stacksTo(1)));
-
-    public static final RegistryObject<Item> IRON_GLIDER = ITEMS.register("iron_glider",
-            () -> new ForgeGliderItem(-0.18, 1.03, new Item.Properties().stacksTo(1)));
-
-    public static final RegistryObject<Item> GOLDEN_GLIDER = ITEMS.register("golden_glider",
-            () -> new ForgeGliderItem(-0.16, 1.04, new Item.Properties().stacksTo(1)));
-
-    public static final RegistryObject<Item> DIAMOND_GLIDER = ITEMS.register("diamond_glider",
-            () -> new ForgeGliderItem(-0.14, 1.05, new Item.Properties().stacksTo(1)));
-
-    public static final RegistryObject<Item> NETHERITE_GLIDER = ITEMS.register("netherite_glider",
-            () -> new ForgeGliderItem(-0.12, 1.06,
-                    new Item.Properties().stacksTo(1).fireResistant()));
-
     private static void addItemsToCreativeTabs(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(WOODEN_GLIDER.get());
