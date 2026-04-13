@@ -62,12 +62,13 @@ public class GlidingForgeClient {
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         for (Item item : ForgeRegistries.ITEMS.getValues()) {
-            event.register((stack, tintIndex) -> {
-                if (tintIndex == 0 && stack.getItem() instanceof GliderItem glider) {
-                    return glider.getColor(stack);
-                }
-                return 0xFFFFFF;
-            }, item);
+            if (item instanceof GliderItem glider)
+                event.register((stack, tintIndex) -> {
+                    if (tintIndex == 0) {
+                        return glider.getColor(stack);
+                    }
+                    return 0xFFFFFF;
+                }, item);
         }
     }
 }
