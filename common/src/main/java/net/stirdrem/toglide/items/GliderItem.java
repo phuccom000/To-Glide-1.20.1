@@ -3,6 +3,9 @@ package net.stirdrem.toglide.items;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
@@ -11,6 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.stirdrem.toglide.PlayerEntityDuck;
 import net.stirdrem.toglide.networking.SyncGliderPacket;
+import net.stirdrem.toglide.platform.Services;
 
 public class GliderItem extends Item implements DyeableLeatherItem {
 
@@ -31,7 +35,7 @@ public class GliderItem extends Item implements DyeableLeatherItem {
             return DyeableLeatherItem.super.getColor(stack);
         }
 
-        return 0xFFFFFF;
+        return parseHexColor(Services.CONFIG_HELPER.getDefaultGliderColor());
     }
 
     @Override
@@ -100,6 +104,54 @@ public class GliderItem extends Item implements DyeableLeatherItem {
         return InteractionResultHolder.pass(stack);
     }
 
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
+        if (level.isClientSide) return;
+        if (!(entity instanceof Player player)) return;
+        if (player.isCreative()) return;
+
+        if (!(player instanceof PlayerEntityDuck duck)) return;
+
+        // Only damage if this is the active glider
+        if (!duck.toglide$isGliding()) return;
+        if (duck.toglide$getActiveGlider() != this) return;
+
+        // Optional: only damage if actually falling/gliding
+        if (player.onGround() || player.isInWater()) return;
+
+        // Damage every X ticks (avoid destroying instantly)
+        if (player.tickCount % 20 == 0) { // every 1 second
+            stack.hurtAndBreak(1, player, p -> {
+                InteractionHand hand = InteractionHand.MAIN_HAND;
+                p.broadcastBreakEvent(hand);
+            });
+        }
+        if (Services.CONFIG_HELPER.getEnableIncreasedLightningHit())
+            if (level.isThundering() && level.canSeeSky(player.blockPosition())) {
+
+                // Run once per second instead of every tick
+                if (player.tickCount % 20 == 0) {
+
+                    // Base chance (tweak this)
+                    double chance = 0.05; // 5% per second
+
+                    // Optional: increase chance with height
+                    double heightFactor = Math.min(1.0, player.getY() / 256.0);
+                    chance += heightFactor * 0.10; // up to +10%
+
+                    if (level.random.nextDouble() < chance) {
+
+                        LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(level);
+                        if (lightning != null) {
+                            lightning.moveTo(player.getX(), player.getY(), player.getZ());
+                            lightning.setCause(player instanceof ServerPlayer sp ? sp : null);
+                            level.addFreshEntity(lightning);
+                        }
+                    }
+                }
+            }
+    }
+
     /**
      * Play glider open/close sound
      *
@@ -121,22 +173,42 @@ public class GliderItem extends Item implements DyeableLeatherItem {
      */
     private boolean isAboveGround(Player player, double minHeight) {
         Level level = player.level();
-        Vec3 position = player.position();
 
-        // Simple raycast to find the ground
-        var hitResult = level.clip(new net.minecraft.world.level.ClipContext(
-                position,
-                position.subtract(0, position.y + 10, 0),
+        Vec3 start = player.position();
+        Vec3 end = start.subtract(0, 256, 0); // go far enough down to always hit ground
+
+        var hit = level.clip(new net.minecraft.world.level.ClipContext(
+                start,
+                end,
                 net.minecraft.world.level.ClipContext.Block.COLLIDER,
                 net.minecraft.world.level.ClipContext.Fluid.NONE,
                 player
         ));
 
-        if (hitResult.getType() != net.minecraft.world.phys.HitResult.Type.MISS) {
-            double distanceToGround = position.y - hitResult.getLocation().y;
-            return distanceToGround >= minHeight;
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.MISS) {
+            double distance = start.y - hit.getLocation().y;
+            return distance >= minHeight;
         }
 
         return false;
+    }
+
+    public static int parseHexColor(String hex) {
+        if (hex == null) return 0xFFFFFF;
+
+        hex = hex.trim();
+
+        // Support "0xFFFFFF", "#FFFFFF", or "FFFFFF"
+        if (hex.startsWith("0x") || hex.startsWith("0X")) {
+            hex = hex.substring(2);
+        } else if (hex.startsWith("#")) {
+            hex = hex.substring(1);
+        }
+
+        try {
+            return Integer.parseInt(hex, 16);
+        } catch (NumberFormatException e) {
+            return 0xFFFFFF; // fallback (white)
+        }
     }
 }

@@ -2,6 +2,7 @@ plugins {
     id 'multiloader-loader'
     id 'fabric-loom'
 }
+
 repositories {
     maven { url 'https://maven.shedaniel.me' }
     maven { url 'https://maven.wispforest.io/releases' }
@@ -17,6 +18,10 @@ repositories {
     maven { url 'https://maven.blamejared.com/' }
     maven { url 'https://modmaven.dev' }
     maven { url 'https://jitpack.io' }
+    maven {
+        name 'Xander Maven'
+        url 'https://maven.isxander.dev/releases'
+    }
 
     exclusiveContent {
         forRepository {
@@ -43,6 +48,8 @@ dependencies {
     modApi "me.shedaniel.cloth:cloth-config:${cloth_config}"
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    modImplementation "dev.isxander:yet-another-config-lib:${yacl_version}"
+
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     implementation project(":common")
 }

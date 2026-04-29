@@ -4,11 +4,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import net.stirdrem.toglide.PlayerEntityDuck;
+import net.stirdrem.toglide.datapack.UpdraftManager;
 import net.stirdrem.toglide.items.GliderItem;
 import net.stirdrem.toglide.networking.SyncGliderPacket;
 import net.stirdrem.toglide.platform.Services;
@@ -189,58 +189,60 @@ public class GliderUtil {
         BlockPos playerPos = player.blockPosition();
         double playerY = player.getY();
 
-        // Check blocks below the player within range
         for (int y = 1; y <= CHECK_RANGE; y++) {
             BlockPos checkPos = playerPos.below(y);
             BlockState state = level.getBlockState(checkPos);
 
-            double sourceY = checkPos.getY() + 1; // Top of the block
+            double sourceY = checkPos.getY() + 1;
             double heightAboveSource = playerY - sourceY;
 
-            // Calculate base strength based on block type
-            double baseStrength = 0;
+            // Pure datapack lookup (block + tag supported)
+            UpdraftData data = getUpdraftData(state);
 
-            // Check for campfires (lit only)
-            if (state.getBlock() instanceof CampfireBlock && state.getValue(CampfireBlock.LIT)) {
-                if (state.is(Blocks.SOUL_CAMPFIRE)) {
-                    baseStrength = SOUL_CAMPFIRE_UPDRAFT;
-                } else {
-                    baseStrength = CAMPFIRE_UPDRAFT;
+            if (data != null) {
+                // Handle generic "requires_lit" without hardcoding block types
+                if (data.requiresLit) {
+                    if (!state.hasProperty(BlockStateProperties.LIT) ||
+                            !state.getValue(BlockStateProperties.LIT)) {
+                        continue;
+                    }
                 }
-            }
-            // Check for fire
-            else if (state.is(Blocks.FIRE)) {
-                baseStrength = FIRE_UPDRAFT;
-            }
-            // Check for soul fire
-            else if (state.is(Blocks.SOUL_FIRE)) {
-                baseStrength = SOUL_FIRE_UPDRAFT;
-            }
-            // Check for lava (any lava block)
-            else if (state.is(Blocks.LAVA)) {
-                baseStrength = LAVA_UPDRAFT;
-            }
 
-            if (baseStrength > 0) {
-                // Distance-based falloff (closer = stronger)
+                double baseStrength = data.strength;
+
+                // Distance falloff (closer = stronger)
                 double distanceFalloff = Math.max(0, 1.0 - (y - 1) * 0.04);
 
-                // Height-based falloff (lower height above source = stronger)
+                // Height falloff (higher above source = weaker)
                 double heightFalloff = Math.max(0, 1.0 - (heightAboveSource / CHECK_RANGE));
 
-                // Combine falloffs
                 double finalStrength = baseStrength * distanceFalloff * heightFalloff;
 
                 return new UpdraftInfo(true, finalStrength, y, heightAboveSource);
             }
 
-            // Stop checking if we hit solid ground (prevents checking through walls)
-            if (level.getBlockState(checkPos).isSolid() && y <= 5) {
+            // Optional optimization: stop early if blocked
+            if (state.isSolid() && y <= 5) {
                 break;
             }
         }
 
         return new UpdraftInfo(false, 0, 0, 0);
+    }
+
+    private static UpdraftData getUpdraftData(BlockState state) {
+        // 1. Direct block match (fast)
+        UpdraftData data = UpdraftManager.BLOCK_DATA.get(state.getBlock());
+        if (data != null) return data;
+
+        // 2. Tag match (slower, iterate)
+        for (UpdraftManager.TagEntry entry : UpdraftManager.TAG_DATA) {
+            if (state.is(entry.tag)) {
+                return entry.data;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -1,0 +1,5 @@
+{
+  "block": "minecraft:campfire",
+  "strength": 0.25,
+  "requires_lit": true
+}

@@ -19,7 +19,7 @@ public class ModItemsRegistry {
 
     // Register glider items
     public static final RegistryObject<Item> WOODEN_GLIDER = ITEMS.register("wooden_glider",
-            () -> new ForgeGliderItem(-0.12, 1.06, new Item.Properties().stacksTo(1)));
+            () -> new ForgeGliderItem(-0.12, 1.06, new Item.Properties().stacksTo(1).durability(300)));
 
     private static void addItemsToCreativeTabs(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {

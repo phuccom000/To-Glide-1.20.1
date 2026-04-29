@@ -11,7 +11,7 @@ import net.stirdrem.toglide.ToGlide;
 public interface ModItemsRegistry {
 
     // registers glider items
-    Item WOODEN_GLIDER = register("wooden_glider", new FabricGliderItem(-0.12, 1.06, new Item.Properties().stacksTo(1)));
+    Item WOODEN_GLIDER = register("wooden_glider", new FabricGliderItem(-0.12, 1.06, new Item.Properties().stacksTo(1).durability(300)));
 
     static void initialize() {
         // get the event for modifying entries in the tools group and register an event handler that adds the mod items.

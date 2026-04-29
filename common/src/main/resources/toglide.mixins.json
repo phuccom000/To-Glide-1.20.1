@@ -5,12 +5,12 @@
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "ItemStackMixin",
     "LivingEntityMixin",
     "PlayerMixin"
   ],
   "client": [
     "HumanoidModelMixin",
+    "ItemInHandLayerMixin",
     "RemotePlayerMixin"
   ],
   "server": [

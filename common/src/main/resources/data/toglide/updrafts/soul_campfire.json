@@ -1,0 +1,5 @@
+{
+  "block": "minecraft:soul_campfire",
+  "strength": 0.30,
+  "requires_lit": true
+}

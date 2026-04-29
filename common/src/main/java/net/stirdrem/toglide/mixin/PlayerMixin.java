@@ -3,6 +3,7 @@ package net.stirdrem.toglide.mixin;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.stirdrem.toglide.PlayerEntityDuck;
 import net.stirdrem.toglide.items.GliderItem;
 import net.stirdrem.toglide.networking.SyncGliderPacket;
@@ -80,18 +81,16 @@ public abstract class PlayerMixin implements PlayerEntityDuck {
             // Only apply glide if currently gliding
             if (duck.toglide$isGliding()) {
 
-                // Stop gliding if active glider is no longer in either hand
                 GliderItem activeGlider = duck.toglide$getActiveGlider();
-                boolean hasActiveGlider = activeGlider != null &&
-                        ((player.getMainHandItem().getItem() == activeGlider));
+                ItemStack mainHand = player.getMainHandItem();
 
-                if (!hasActiveGlider) {
+                if (activeGlider == null || mainHand.isEmpty() || mainHand.getItem() != activeGlider) {
                     duck.toglide$setIsGliding(false);
                     duck.toglide$setActiveGlider(null);
                     duck.toglide$setIsActivatingGlider(false);
                     return;
                 }
-
+                
                 // Apply glider movement
                 GliderUtil.playerGliderMovement(player);
                 GliderUtil.resetFallDamage(player);

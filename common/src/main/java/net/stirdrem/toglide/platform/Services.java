@@ -1,6 +1,7 @@
 package net.stirdrem.toglide.platform;
 
 import net.stirdrem.toglide.ToGlide;
+import net.stirdrem.toglide.platform.services.IConfigHelper;
 import net.stirdrem.toglide.platform.services.IGlidingStateHelper;
 import net.stirdrem.toglide.platform.services.IPlatformHelper;
 
@@ -16,6 +17,7 @@ public class Services {
     // mod is loaded.
     public static final IPlatformHelper PLATFORM = load(IPlatformHelper.class);
     public static final IGlidingStateHelper GLIDING_STATE_HELPER = load(IGlidingStateHelper.class);
+    public static final IConfigHelper CONFIG_HELPER = load(IConfigHelper.class);
 
     // This code is used to load a service for the current environment. Your implementation of the service must be defined
     // manually by including a text file in META-INF/services named with the fully qualified class name of the service.
