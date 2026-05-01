@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "mod_id",
+  "id": "${mod_id}",
   "version": "${version}",
   "name": "${mod_name}",
   "description": "${description}",
@@ -8,11 +8,11 @@
     "${mod_author}"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/phuccom000/To-Glide-1.20.1",
+    "sources": "https://github.com/phuccom000/To-Glide-1.20.1"
   },
   "license": "${license}",
-  "icon": "assets/modid/${mod_id}.png",
+  "icon": "icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
